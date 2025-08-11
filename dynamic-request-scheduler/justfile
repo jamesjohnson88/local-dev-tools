@@ -1,0 +1,14 @@
+# Default recipe prints help
+set windows-shell := ["powershell.exe", "-NoLogo", "-Command"]
+default: help
+
+# Run the dynamic request scheduler with an interval (in seconds)
+# Usage: just run 30
+run x:
+	@echo "Trying to run dynamic-request-scheduler..."
+	go run . -interval {{x}}
+
+# Show available commands
+help:
+	@echo "Available recipes:"
+	@echo "  just run <seconds>   # Run with given interval, e.g. 'just run 30'"
