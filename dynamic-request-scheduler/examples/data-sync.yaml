@@ -1,0 +1,102 @@
+# Data Synchronization Configuration Example
+# This example demonstrates data collection and synchronization patterns
+
+requests:
+  # Data collection - runs every 5 minutes
+  - name: "User Data Collection"
+    schedule:
+      relative: "5m"
+      jitter: "±30s"
+    http:
+      method: "POST"
+      url: "https://api.example.com/data/users"
+      headers:
+        Content-Type: "application/json"
+        X-Request-ID: "{{ uuid }}"
+        X-Timestamp: "{{ now | unix }}"
+        X-Source: "dynamic-scheduler"
+        Authorization: "Bearer {{ env 'DATA_API_TOKEN' }}"
+      body:
+        collection_id: "{{ uuid }}"
+        timestamp: "{{ now | unix }}"
+        sequence: "{{ seq }}"
+        metadata:
+          source: "user-data-collector"
+          version: "1.0"
+          environment: "{{ env 'ENV' }}"
+        parameters:
+          batch_size: "{{ randInt 100 1000 }}"
+          priority: "normal"
+
+  # Metrics collection - runs every minute
+  - name: "System Metrics Collection"
+    schedule:
+      relative: "1m"
+      jitter: "±10s"
+    http:
+      method: "POST"
+      url: "https://metrics.example.com/collect"
+      headers:
+        Content-Type: "application/json"
+        X-Request-ID: "{{ uuid }}"
+        X-Timestamp: "{{ now | unix }}"
+        X-Source: "dynamic-scheduler"
+      body:
+        metrics_id: "{{ uuid }}"
+        collected_at: "{{ now | rfc3339 }}"
+        sequence: "{{ seq }}"
+        system_info:
+          hostname: "{{ env 'HOSTNAME' }}"
+          environment: "{{ env 'ENV' }}"
+          version: "{{ env 'APP_VERSION' }}"
+        metrics:
+          cpu_usage: "{{ randFloat }}"
+          memory_usage: "{{ randFloat }}"
+          active_connections: "{{ randInt 10 1000 }}"
+
+  # Database backup verification - runs every hour
+  - name: "Backup Verification"
+    schedule:
+      relative: "1h"
+      jitter: "±5m"
+    http:
+      method: "POST"
+      url: "https://backup.example.com/verify"
+      headers:
+        Content-Type: "application/json"
+        X-Request-ID: "{{ uuid }}"
+        X-Timestamp: "{{ now | unix }}"
+        X-Source: "dynamic-scheduler"
+        Authorization: "Bearer {{ env 'BACKUP_API_TOKEN' }}"
+      body:
+        verification_id: "{{ uuid }}"
+        requested_at: "{{ now | unix }}"
+        backup_type: "database"
+        parameters:
+          retention_days: 30
+          compression: true
+          encryption: true
+
+  # Cache warming - runs every 15 minutes
+  - name: "Cache Warming"
+    schedule:
+      relative: "15m"
+      jitter: "±2m"
+    http:
+      method: "POST"
+      url: "https://cache.example.com/warm"
+      headers:
+        Content-Type: "application/json"
+        X-Request-ID: "{{ uuid }}"
+        X-Timestamp: "{{ now | unix }}"
+        X-Source: "dynamic-scheduler"
+      body:
+        warming_id: "{{ uuid }}"
+        started_at: "{{ now | unix }}"
+        cache_keys:
+          - "popular_products"
+          - "user_preferences"
+          - "system_config"
+        parameters:
+          ttl: 3600
+          priority: "high"

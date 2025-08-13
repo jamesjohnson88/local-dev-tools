@@ -1,0 +1,59 @@
+# Health Check Configuration Example
+# This example shows how to set up basic health monitoring for multiple services
+
+requests:
+  # Basic health check - runs every minute
+  - name: "API Health Check"
+    schedule:
+      relative: "1m"
+      jitter: "±10s"
+    http:
+      method: "GET"
+      url: "https://api.example.com/health"
+      headers:
+        User-Agent: "HealthChecker/{{ seq }}"
+        X-Timestamp: "{{ now | unix }}"
+        X-Request-ID: "{{ uuid }}"
+      body: null
+
+  # Database health check - runs every 30 seconds
+  - name: "Database Health Check"
+    schedule:
+      relative: "30s"
+      jitter: "±5s"
+    http:
+      method: "GET"
+      url: "https://db.example.com/health"
+      headers:
+        User-Agent: "HealthChecker/{{ seq }}"
+        X-Timestamp: "{{ now | unix }}"
+        X-Request-ID: "{{ uuid }}"
+      body: null
+
+  # Cache health check - runs every 2 minutes
+  - name: "Cache Health Check"
+    schedule:
+      relative: "2m"
+      jitter: "±15s"
+    http:
+      method: "GET"
+      url: "https://cache.example.com/health"
+      headers:
+        User-Agent: "HealthChecker/{{ seq }}"
+        X-Timestamp: "{{ now | unix }}"
+        X-Request-ID: "{{ uuid }}"
+      body: null
+
+  # Load balancer health check - runs every 15 seconds
+  - name: "Load Balancer Health Check"
+    schedule:
+      relative: "15s"
+      jitter: "±3s"
+    http:
+      method: "GET"
+      url: "https://lb.example.com/health"
+      headers:
+        User-Agent: "HealthChecker/{{ seq }}"
+        X-Timestamp: "{{ now | unix }}"
+        X-Request-ID: "{{ uuid }}"
+      body: null

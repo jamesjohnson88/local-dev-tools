@@ -1,0 +1,120 @@
+# Business Hours Configuration Example
+# This example shows how to schedule tasks during business hours using templates
+
+requests:
+  # Morning report - runs at 9 AM business days
+  - name: "Morning Business Report"
+    schedule:
+      template: "{{ addHours 9 (parseTime '2006-01-02' (now | rfc3339 | slice 0 10)) | unix }}"
+      jitter: "±15m"
+    http:
+      method: "POST"
+      url: "https://reports.example.com/morning"
+      headers:
+        Content-Type: "application/json"
+        X-Request-ID: "{{ uuid }}"
+        X-Timestamp: "{{ now | unix }}"
+        X-Source: "dynamic-scheduler"
+        Authorization: "Bearer {{ env 'REPORTS_API_TOKEN' }}"
+      body:
+        report_id: "{{ uuid }}"
+        report_type: "morning-business"
+        business_date: "{{ now | rfc3339 | slice 0 10 }}"
+        generated_at: "{{ now | unix }}"
+        parameters:
+          include_metrics: true
+          include_forecasts: true
+          priority: "high"
+
+  # Lunch time data sync - runs at 12 PM business days
+  - name: "Lunch Time Data Sync"
+    schedule:
+      template: "{{ addHours 12 (parseTime '2006-01-02' (now | rfc3339 | slice 0 10)) | unix }}"
+      jitter: "±30m"
+    http:
+      method: "POST"
+      url: "https://sync.example.com/lunch-time"
+      headers:
+        Content-Type: "application/json"
+        X-Request-ID: "{{ uuid }}"
+        X-Timestamp: "{{ now | unix }}"
+        X-Source: "dynamic-scheduler"
+      body:
+        sync_id: "{{ uuid }}"
+        sync_type: "lunch-time"
+        business_date: "{{ now | rfc3339 | slice 0 10 }}"
+        started_at: "{{ now | unix }}"
+        parameters:
+          batch_size: "{{ randInt 500 2000 }}"
+          priority: "medium"
+
+  # Afternoon status check - runs at 3 PM business days
+  - name: "Afternoon Status Check"
+    schedule:
+      template: "{{ addHours 15 (parseTime '2006-01-02' (now | rfc3339 | slice 0 10)) | unix }}"
+      jitter: "±20m"
+    http:
+      method: "GET"
+      url: "https://status.example.com/afternoon"
+      headers:
+        User-Agent: "BusinessScheduler/{{ seq }}"
+        X-Request-ID: "{{ uuid }}"
+        X-Timestamp: "{{ now | unix }}"
+        X-Source: "dynamic-scheduler"
+      body: null
+
+  # End of day summary - runs at 5 PM business days
+  - name: "End of Day Summary"
+    schedule:
+      template: "{{ addHours 17 (parseTime '2006-01-02' (now | rfc3339 | slice 0 10)) | unix }}"
+      jitter: "±30m"
+    http:
+      method: "POST"
+      url: "https://reports.example.com/end-of-day"
+      headers:
+        Content-Type: "application/json"
+        X-Request-ID: "{{ uuid }}"
+        X-Timestamp: "{{ now | unix }}"
+        X-Source: "dynamic-scheduler"
+        Authorization: "Bearer {{ env 'REPORTS_API_TOKEN' }}"
+      body:
+        summary_id: "{{ uuid }}"
+        summary_type: "end-of-day"
+        business_date: "{{ now | rfc3339 | slice 0 10 }}"
+        generated_at: "{{ now | unix }}"
+        metrics:
+          total_requests: "{{ randInt 1000 10000 }}"
+          success_rate: "{{ randFloat }}"
+          average_response_time: "{{ randInt 50 500 }}"
+        parameters:
+          include_charts: true
+          include_recommendations: true
+
+  # Weekly planning - runs every Monday at 8 AM
+  - name: "Weekly Planning Session"
+    schedule:
+      template: "{{ addHours 8 (parseTime '2006-01-02' (now | rfc3339 | slice 0 10)) | unix }}"
+      jitter: "±1h"
+    http:
+      method: "POST"
+      url: "https://planning.example.com/weekly"
+      headers:
+        Content-Type: "application/json"
+        X-Request-ID: "{{ uuid }}"
+        X-Timestamp: "{{ now | unix }}"
+        X-Source: "dynamic-scheduler"
+        Authorization: "Bearer {{ env 'PLANNING_API_TOKEN' }}"
+      body:
+        planning_id: "{{ uuid }}"
+        planning_type: "weekly"
+        week_start: "{{ now | rfc3339 | slice 0 10 }}"
+        scheduled_at: "{{ now | unix }}"
+        agenda:
+          - "Review last week's performance"
+          - "Plan this week's priorities"
+          - "Resource allocation review"
+          - "Risk assessment"
+        participants:
+          - "management-team"
+          - "department-heads"
+          - "project-managers"

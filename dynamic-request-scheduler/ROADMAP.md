@@ -3,7 +3,7 @@
 ### Progress Summary
 - **Phase 0**: ✅ **COMPLETED** - Baseline refactor and scaffolding
 - **Phase 1**: ✅ **COMPLETED** - Config-first loading  
-- **Phase 2**: 🔄 **IN PROGRESS** - Dynamic value representation and evaluation
+- **Phase 2**: ✅ **COMPLETED** - Dynamic value representation and evaluation
 - **Phase 3**: ⏳ **PENDING** - Scheduling strategies
 - **Phase 4**: ⏳ **PENDING** - Execution engine
 - **Phase 5**: ⏳ **PENDING** - CLI and UX
@@ -32,16 +32,16 @@
 - [x] Validate config: method, URL, headers, schedule one-of, body serializability
 - [x] Add `--config <path>` flag in `main` to load requests
 
-### Phase 2: Dynamic value representation and evaluation
-- [ ] Introduce dynamic value types:
-  - [ ] `DynamicString`, `DynamicInt64`, `DynamicAny` (JSON-unmarshal accepts literal or `{template: "..."}` or `{expr: "..."}`)
-- [ ] Implement template engine support:
-  - [ ] Start with Go `text/template` + function map (Sprig-like helpers)
-  - [ ] Functions: `now`, `unix`, `rfc3339`, `addSeconds`, `addMinutes`, `addHours`, `uuid`, `randInt`, `randFloat`, `env`, `jitter`
-- [ ] Provide evaluation context and resolver:
-  - [ ] `Evaluate(spec, ctx) (ResolvedRequest, error)` to resolve all dynamic fields before send
-  - [ ] Add `--var k=v` to inject user variables into the context
-- [ ] Optional: expression engine (CEL or `antonmedv/expr`) if we want `dyn.Unix.AddMinutes(11)` style
+### Phase 2: Dynamic value representation and evaluation (COMPLETED ✅)
+- [x] Introduce dynamic value types:
+  - [x] `DynamicString`, `DynamicInt64`, `DynamicAny` (JSON-unmarshal accepts literal or `{template: "..."}` or `{expr: "..."}`)
+- [x] Implement template engine support:
+  - [x] Start with Go `text/template` + function map (Sprig-like helpers)
+  - [x] Functions: `now`, `unix`, `rfc3339`, `addSeconds`, `addMinutes`, `addHours`, `uuid`, `randInt`, `randFloat`, `env`, `jitter`
+- [x] Provide evaluation context and resolver:
+  - [x] `Evaluate(spec, ctx) (ResolvedRequest, error)` to resolve all dynamic fields before send
+  - [x] Add `--var k=v` to inject user variables into the context
+- [x] Optional: expression engine (CEL or `antonmedv/expr`) if we want `dyn.Unix.AddMinutes(11)` style
 
 ### Phase 3: Scheduling strategies
 - [ ] Implement `ScheduleSpec` variants:
