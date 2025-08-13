@@ -1,0 +1,43 @@
+requests:
+  - name: "Run once"
+    schedule:
+      relative: "11m"
+      jitter: "±30s"
+    http:
+      method: "POST"
+      url: "https://localhost:10001/core/scheduler/tasks/run-once"
+      headers:
+        Content-Type: "application/json"
+        X-Trace: "{{ uuid }}"
+      body:
+        task_request_method: "GET"
+        task_request_url: "https://localhost:10001/fad/health"
+        task_request_headers: null
+        task_request_payload: null
+        scheduled_for: "{{ now | addMinutes 11 | unix }}"
+
+  - name: "Health check"
+    schedule:
+      cron: "*/5 * * * *"
+    http:
+      method: "GET"
+      url: "https://localhost:10001/health"
+      headers:
+        User-Agent: "DynamicScheduler/1.0"
+      body: null
+
+  - name: "Scheduled task"
+    schedule:
+      epoch: 1718039123
+    http:
+      method: "POST"
+      url: "https://localhost:10001/api/tasks"
+      headers:
+        Content-Type: "application/json"
+        Authorization: 'Bearer {{ env "API_TOKEN" }}'
+      body:
+        name: "test-task"
+        scheduled_at: "{{ now | rfc3339 }}"
+        metadata:
+          source: "dynamic-scheduler"
+          iteration: "{{ seq }}"

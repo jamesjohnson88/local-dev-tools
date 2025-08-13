@@ -1,26 +1,36 @@
 ## Dynamic Request Scheduler – Tasks and Decisions
 
+### Progress Summary
+- **Phase 0**: ✅ **COMPLETED** - Baseline refactor and scaffolding
+- **Phase 1**: ✅ **COMPLETED** - Config-first loading  
+- **Phase 2**: 🔄 **IN PROGRESS** - Dynamic value representation and evaluation
+- **Phase 3**: ⏳ **PENDING** - Scheduling strategies
+- **Phase 4**: ⏳ **PENDING** - Execution engine
+- **Phase 5**: ⏳ **PENDING** - CLI and UX
+- **Phase 6**: ⏳ **PENDING** - Testing and examples
+- **Phase 7**: ⏳ **PENDING** - Documentation
+
 ### Context and goals
 - **Goal**: Make `ScheduledRequest` declarative, config-driven, and support dynamic values (time, URL, headers, payload) via templates/expressions, with multiple scheduling strategies.
 - **Outcome**: Easily add many request types for testing without code changes; evaluate dynamic fields at runtime; support per-request schedules.
 
 ## Phased plan (with tasks)
 
-### Phase 0: Baseline refactor and scaffolding
-- [ ] Extract and rename core types:
-  - [ ] Introduce `HttpRequestSpec` (method, url, headers, body)
-  - [ ] Introduce `ScheduleSpec` (one-of: epoch | relative | expression | cron | jitter)
-  - [ ] Make `ScheduledRequest` a composition `{ name, schedule, http }`
-- [ ] Export currently unexported fields in `local-dev-tools/dynamic-request-scheduler/main.go` or move them into new package(s):
-  - [ ] Create `internal/spec` for type definitions
-  - [ ] Create `internal/engine` for evaluation and execution
-- [ ] Remove hardcoded defaults in `NewScheduledRequest`/`NewRequestBody`; defaults will be provided via config or functional options
+### Phase 0: Baseline refactor and scaffolding ✅
+- [x] Extract and rename core types:
+  - [x] Introduce `HttpRequestSpec` (method, url, headers, body)
+  - [x] Introduce `ScheduleSpec` (one-of: epoch | relative | expression | cron | jitter)
+  - [x] Make `ScheduledRequest` a composition `{ name, schedule, http }`
+- [x] Export currently unexported fields in `local-dev-tools/dynamic-request-scheduler/main.go` or move them into new package(s):
+  - [x] Create `internal/spec` for type definitions
+  - [x] Create `internal/engine` for evaluation and execution
+- [x] Remove hardcoded defaults in `NewScheduledRequest`/`NewRequestBody`; defaults will be provided via config or functional options
 
-### Phase 1: Config-first loading
-- [ ] Decide on config format (YAML recommended, JSON also supported)
-- [ ] Implement `LoadConfig(path string) ([]ScheduledRequest, error)`
-- [ ] Validate config: method, URL, headers, schedule one-of, body serializability
-- [ ] Add `--config <path>` flag in `main` to load requests
+### Phase 1: Config-first loading ✅
+- [x] Decide on config format (YAML recommended, JSON also supported)
+- [x] Implement `LoadConfig(path string) ([]ScheduledRequest, error)`
+- [x] Validate config: method, URL, headers, schedule one-of, body serializability
+- [x] Add `--config <path>` flag in `main` to load requests
 
 ### Phase 2: Dynamic value representation and evaluation
 - [ ] Introduce dynamic value types:

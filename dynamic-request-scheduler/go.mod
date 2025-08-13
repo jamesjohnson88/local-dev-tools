@@ -1,3 +1,5 @@
-module github.com/jamesjohnson88/local-dev-tools/dynamic-request-scheduler
+module local-dev-tools/dynamic-request-scheduler
 
-go 1.24.4
+go 1.21
+
+require gopkg.in/yaml.v3 v3.0.1

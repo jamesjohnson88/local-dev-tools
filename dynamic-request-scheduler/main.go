@@ -8,89 +8,115 @@ import (
 	"io"
 	"net/http"
 	"time"
+
+	"local-dev-tools/dynamic-request-scheduler/internal/spec"
 )
 
-type ScheduledRequest struct {
-	displayName string
-	method      string
-	url         string
-	contentType string
-	requestBody interface{}
-}
-
-func NewScheduledRequest() *ScheduledRequest {
-	return &ScheduledRequest{
-		displayName: "Send 'run once' request to core-scheduler",
-		method:      "POST",
-		url:         "https://localhost:10001/core/scheduler/tasks/run-once",
-		contentType: "application/json",
-		requestBody: NewRequestBody(),
+func sendEvent(requests []spec.ScheduledRequest) {
+	for _, req := range requests {
+		// TODO: Implement dynamic field resolution and scheduling logic
+		// For now, just send the request as-is
+		sendSingleRequest(&req)
 	}
 }
 
-type RequestBody struct {
-	ScheduledFor       int64             `json:"scheduled_for"`
-	TaskRequestMethod  string            `json:"task_request_method"`
-	TaskRequestUrl     string            `json:"task_request_url"`
-	TaskRequestHeaders map[string]string `json:"task_request_headers"`
-	TaskRequestPayload interface{}       `json:"task_request_payload"`
-}
-
-func NewRequestBody() *RequestBody {
-	return &RequestBody{
-		ScheduledFor:       time.Now().Unix() + 600,
-		TaskRequestMethod:  "GET",
-		TaskRequestUrl:     "https://localhost:10001/fad/health",
-		TaskRequestHeaders: nil,
-		TaskRequestPayload: nil,
-	}
-}
-
-func sendEvent() {
-	s := NewScheduledRequest()
-
+func sendSingleRequest(req *spec.ScheduledRequest) {
 	var body io.Reader
-	if s.method != "GET" && s.requestBody != nil {
-		jsonData, err := json.Marshal(s.requestBody)
+	if req.HTTP.Method != "GET" && req.HTTP.Body != nil {
+		jsonData, err := json.Marshal(req.HTTP.Body)
 		if err != nil {
-			fmt.Printf("Error marshaling JSON: %v\n", err)
+			fmt.Printf("Error marshaling JSON for request '%s': %v\n", req.Name, err)
 			return
 		}
 		body = bytes.NewReader(jsonData)
 	}
 
-	req, err := http.NewRequest(s.method, s.url, body)
+	httpReq, err := http.NewRequest(req.HTTP.Method, req.HTTP.URL, body)
 	if err != nil {
-		fmt.Printf("Error creating request: %v\n", err)
+		fmt.Printf("Error creating request for '%s': %v\n", req.Name, err)
 		return
 	}
 
+	// Set headers
 	if body != nil {
-		req.Header.Set("Content-Type", s.contentType)
+		httpReq.Header.Set("Content-Type", "application/json")
+	}
+
+	// Set custom headers
+	for key, value := range req.HTTP.Headers {
+		httpReq.Header.Set(key, value)
 	}
 
 	client := &http.Client{Timeout: 10 * time.Second}
-	resp, err := client.Do(req)
+	resp, err := client.Do(httpReq)
 	if err != nil {
-		fmt.Printf("Error: %v\n", err)
+		fmt.Printf("Error sending request '%s': %v\n", req.Name, err)
 		return
 	}
 	defer resp.Body.Close()
 
-	fmt.Printf("%v %v: %v\n", s.method, s.url, resp.Status)
+	fmt.Printf("[%s] %s %s: %s\n", req.Name, req.HTTP.Method, req.HTTP.URL, resp.Status)
 }
 
 func main() {
-	intervalSeconds := flag.Int("interval", 60, "Request interval in seconds")
+	configPath := flag.String("config", "", "Path to configuration file (YAML or JSON)")
+	intervalSeconds := flag.Int("interval", 60, "Request interval in seconds (legacy mode)")
 	flag.Parse()
 
-	fmt.Printf("Running with interval of %ds \n", *intervalSeconds)
+	if *configPath == "" {
+		// Legacy mode - run with hardcoded request every interval
+		fmt.Printf("No config file specified, running in legacy mode with interval of %ds\n", *intervalSeconds)
+		runLegacyMode(*intervalSeconds)
+		return
+	}
 
-	interval := time.Duration(*intervalSeconds) * time.Second
+	// Load configuration
+	requests, err := spec.LoadConfig(*configPath)
+	if err != nil {
+		fmt.Printf("Error loading config: %v\n", err)
+		return
+	}
+
+	fmt.Printf("Loaded %d requests from %s\n", len(requests), *configPath)
+
+	// TODO: Implement proper scheduling engine
+	// For now, just send all requests immediately
+	sendEvent(requests)
+}
+
+func runLegacyMode(intervalSeconds int) {
+	// Create a legacy request for backward compatibility
+	legacyRequest := &spec.ScheduledRequest{
+		Name: "Legacy Run Once",
+		Schedule: spec.ScheduleSpec{
+			Relative: stringPtr("10m"),
+		},
+		HTTP: spec.HttpRequestSpec{
+			Method: "POST",
+			URL:    "https://localhost:10001/core/scheduler/tasks/run-once",
+			Headers: map[string]string{
+				"Content-Type": "application/json",
+			},
+			Body: map[string]interface{}{
+				"scheduled_for":        time.Now().Unix() + 600,
+				"task_request_method":  "GET",
+				"task_request_url":     "https://localhost:10001/fad/health",
+				"task_request_headers": nil,
+				"task_request_payload": nil,
+			},
+		},
+	}
+
+	interval := time.Duration(intervalSeconds) * time.Second
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
 	for range ticker.C {
-		sendEvent()
+		sendSingleRequest(legacyRequest)
 	}
+}
+
+// Helper function to create string pointers
+func stringPtr(s string) *string {
+	return &s
 }
