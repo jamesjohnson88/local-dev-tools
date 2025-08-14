@@ -119,24 +119,34 @@ See the `examples/` directory for configuration examples:
 | `--config <path>` | Path to configuration file | None (legacy mode) |
 | `--interval <seconds>` | Interval in seconds (legacy mode) | 60 |
 
-### Planned Options (Phase 3+)
+### Available Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--config <path>` | Path to configuration file | None (legacy mode) |
+| `--interval <seconds>` | Interval in seconds (legacy mode) | 60 |
+| `--dry-run` | Show resolved requests without sending | false |
+| `--once` | Run all requests once and exit | false |
+| `--workers <N>` | Number of worker goroutines | 1 |
+| `--concurrency <N>` | Maximum concurrent requests | 10 |
+| `--timeout <duration>` | HTTP request timeout | 30s |
+
+### Planned Options (Future)
 
 | Option | Description | Status |
 |--------|-------------|--------|
 | `--var <key=value>` | Set template variables | Coming Soon |
-| `--dry-run` | Show resolved requests without sending | Coming Soon |
-| `--once` | Run all requests once and exit | Coming Soon |
-| `--concurrency <N>` | Maximum concurrent requests | Coming Soon |
 | `--seed <number>` | Seed for deterministic random values | Coming Soon |
+| `--limit <N>` | Maximum number of requests to run | Coming Soon |
 
 ## Development Status
 
 - **Phase 0**: ✅ Baseline refactor and scaffolding
 - **Phase 1**: ✅ Config-first loading
 - **Phase 2**: ✅ Dynamic value representation and evaluation
-- **Phase 3**: ⏳ Scheduling strategies (in progress)
-- **Phase 4**: ⏳ Execution engine
-- **Phase 5**: ⏳ CLI and UX
+- **Phase 3**: ✅ Scheduling strategies
+- **Phase 4**: ✅ Execution engine
+- **Phase 5**: ✅ CLI and UX
 - **Phase 6**: ⏳ Testing and examples
 - **Phase 7**: ⏳ Documentation
 

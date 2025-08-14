@@ -1,66 +1,27 @@
 ﻿package main
 
 import (
-	"bytes"
-	"encoding/json"
 	"flag"
 	"fmt"
-	"io"
-	"net/http"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
+	"local-dev-tools/dynamic-request-scheduler/internal/engine"
 	"local-dev-tools/dynamic-request-scheduler/internal/spec"
 )
 
-func sendEvent(requests []spec.ScheduledRequest) {
-	for _, req := range requests {
-		// TODO: Implement dynamic field resolution and scheduling logic
-		// For now, just send the request as-is
-		sendSingleRequest(&req)
-	}
-}
-
-func sendSingleRequest(req *spec.ScheduledRequest) {
-	var body io.Reader
-	if req.HTTP.Method != "GET" && req.HTTP.Body != nil {
-		jsonData, err := json.Marshal(req.HTTP.Body)
-		if err != nil {
-			fmt.Printf("Error marshaling JSON for request '%s': %v\n", req.Name, err)
-			return
-		}
-		body = bytes.NewReader(jsonData)
-	}
-
-	httpReq, err := http.NewRequest(req.HTTP.Method, req.HTTP.URL, body)
-	if err != nil {
-		fmt.Printf("Error creating request for '%s': %v\n", req.Name, err)
-		return
-	}
-
-	// Set headers
-	if body != nil {
-		httpReq.Header.Set("Content-Type", "application/json")
-	}
-
-	// Set custom headers
-	for key, value := range req.HTTP.Headers {
-		httpReq.Header.Set(key, value)
-	}
-
-	client := &http.Client{Timeout: 10 * time.Second}
-	resp, err := client.Do(httpReq)
-	if err != nil {
-		fmt.Printf("Error sending request '%s': %v\n", req.Name, err)
-		return
-	}
-	defer resp.Body.Close()
-
-	fmt.Printf("[%s] %s %s: %s\n", req.Name, req.HTTP.Method, req.HTTP.URL, resp.Status)
-}
-
 func main() {
+	// Parse command line flags
 	configPath := flag.String("config", "", "Path to configuration file (YAML or JSON)")
 	intervalSeconds := flag.Int("interval", 60, "Request interval in seconds (legacy mode)")
+	dryRun := flag.Bool("dry-run", false, "Show resolved requests without sending")
+	once := flag.Bool("once", false, "Run all requests once and exit")
+	workers := flag.Int("workers", 1, "Number of worker goroutines")
+	concurrency := flag.Int("concurrency", 10, "Maximum concurrent requests")
+	timeout := flag.Duration("timeout", 30*time.Second, "HTTP request timeout")
 	flag.Parse()
 
 	if *configPath == "" {
@@ -73,15 +34,37 @@ func main() {
 	// Load configuration
 	requests, err := spec.LoadConfig(*configPath)
 	if err != nil {
-		fmt.Printf("Error loading config: %v\n", err)
-		return
+		log.Fatalf("Error loading config: %v", err)
 	}
 
 	fmt.Printf("Loaded %d requests from %s\n", len(requests), *configPath)
 
-	// TODO: Implement proper scheduling engine
-	// For now, just send all requests immediately
-	sendEvent(requests)
+	// Create scheduler configuration
+	config := engine.SchedulerConfig{
+		Workers:     *workers,
+		Concurrency: *concurrency,
+		Once:        *once,
+		DryRun:      *dryRun,
+		Timeout:     *timeout,
+	}
+
+	// Create and start scheduler
+	scheduler := engine.NewScheduler(requests, config)
+
+	// Handle graceful shutdown
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		<-sigChan
+		fmt.Println("\nReceived shutdown signal, stopping scheduler...")
+		scheduler.Stop()
+	}()
+
+	// Start the scheduler
+	if err := scheduler.Start(); err != nil {
+		log.Fatalf("Scheduler error: %v", err)
+	}
 }
 
 func runLegacyMode(intervalSeconds int) {
@@ -107,12 +90,30 @@ func runLegacyMode(intervalSeconds int) {
 		},
 	}
 
-	interval := time.Duration(intervalSeconds) * time.Second
-	ticker := time.NewTicker(interval)
-	defer ticker.Stop()
+	// Create scheduler for legacy mode
+	config := engine.SchedulerConfig{
+		Workers:     1,
+		Concurrency: 1,
+		Once:        false,
+		DryRun:      false,
+		Timeout:     30 * time.Second,
+	}
 
-	for range ticker.C {
-		sendSingleRequest(legacyRequest)
+	scheduler := engine.NewScheduler([]spec.ScheduledRequest{*legacyRequest}, config)
+
+	// Handle graceful shutdown
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		<-sigChan
+		fmt.Println("\nReceived shutdown signal, stopping legacy scheduler...")
+		scheduler.Stop()
+	}()
+
+	// Start the scheduler
+	if err := scheduler.Start(); err != nil {
+		log.Fatalf("Legacy scheduler error: %v", err)
 	}
 }
 

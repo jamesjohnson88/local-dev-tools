@@ -239,7 +239,7 @@ requests:
 - **Performance**: Templates are evaluated at scheduling time
 - **Debugging**: Hard to predict exact execution times
 
-## Cron Scheduling (Coming in Phase 3)
+## Cron Scheduling
 
 ### How It Works
 
@@ -318,7 +318,7 @@ requests:
 ### Considerations
 
 - **Complexity**: Cron expressions can be hard to read
-- **Timezone handling**: Will support timezone specification
+- **Timezone handling**: Currently uses UTC, timezone support planned
 - **Precision**: Minute-level precision
 - **Standard format**: Compatible with standard cron syntax
 
@@ -598,12 +598,13 @@ requests:
 
 ## Future Enhancements
 
-### Phase 3 Features
+### Phase 6+ Features
 
-- **Cron expressions**: Full cron syntax support
 - **Timezone handling**: Per-request timezone specification
 - **Advanced jitter**: Distribution-based jitter algorithms
 - **Schedule dependencies**: Request chaining and dependencies
+- **Variable injection**: `--var` flag for template variables
+- **Seeded randomness**: `--seed` flag for deterministic results
 
 ### Phase 4+ Features
 

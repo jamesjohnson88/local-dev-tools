@@ -222,48 +222,8 @@ func (e *Evaluator) resolveReflectedValue(v interface{}) (interface{}, error) {
 
 // computeScheduledTime computes the actual scheduled time from a ScheduleSpec
 func (e *Evaluator) computeScheduledTime(schedule ScheduleSpec) (time.Time, error) {
-	now := e.engine.ctx.Clock.Now()
-
-	switch {
-	case schedule.Epoch != nil:
-		return time.Unix(*schedule.Epoch, 0), nil
-
-	case schedule.Relative != nil:
-		duration, err := time.ParseDuration(*schedule.Relative)
-		if err != nil {
-			return time.Time{}, fmt.Errorf("invalid relative duration '%s': %w", *schedule.Relative, err)
-		}
-		scheduledTime := now.Add(duration)
-
-		// Apply jitter if specified
-		if schedule.Jitter != nil {
-			scheduledTime = e.engine.jitter(scheduledTime, *schedule.Jitter)
-		}
-
-		return scheduledTime, nil
-
-	case schedule.Template != nil:
-		epoch, err := e.engine.EvaluateTemplateToInt64(*schedule.Template)
-		if err != nil {
-			return time.Time{}, fmt.Errorf("failed to evaluate schedule template: %w", err)
-		}
-		scheduledTime := time.Unix(epoch, 0)
-
-		// Apply jitter if specified
-		if schedule.Jitter != nil {
-			scheduledTime = e.engine.jitter(scheduledTime, *schedule.Jitter)
-		}
-
-		return scheduledTime, nil
-
-	case schedule.Cron != nil:
-		// TODO: Implement cron parsing and next run calculation
-		// For now, return an error
-		return time.Time{}, fmt.Errorf("cron scheduling not yet implemented")
-
-	default:
-		return time.Time{}, fmt.Errorf("no valid schedule strategy found")
-	}
+	scheduleEngine := NewScheduleEngine()
+	return scheduleEngine.ComputeNextRunWithTemplate(e.engine.ctx.Clock.Now(), schedule, e.engine)
 }
 
 // SetVariable sets a variable in the template engine context

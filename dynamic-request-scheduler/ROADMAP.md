@@ -4,9 +4,9 @@
 - **Phase 0**: ✅ **COMPLETED** - Baseline refactor and scaffolding
 - **Phase 1**: ✅ **COMPLETED** - Config-first loading  
 - **Phase 2**: ✅ **COMPLETED** - Dynamic value representation and evaluation
-- **Phase 3**: ⏳ **PENDING** - Scheduling strategies
-- **Phase 4**: ⏳ **PENDING** - Execution engine
-- **Phase 5**: ⏳ **PENDING** - CLI and UX
+- **Phase 3**: ✅ **COMPLETED** - Scheduling strategies
+- **Phase 4**: ✅ **COMPLETED** - Execution engine
+- **Phase 5**: ✅ **COMPLETED** - CLI and UX
 - **Phase 6**: ⏳ **PENDING** - Testing and examples
 - **Phase 7**: ⏳ **PENDING** - Documentation
 
@@ -43,30 +43,30 @@
   - [x] Add `--var k=v` to inject user variables into the context
 - [x] Optional: expression engine (CEL or `antonmedv/expr`) if we want `dyn.Unix.AddMinutes(11)` style
 
-### Phase 3: Scheduling strategies
-- [ ] Implement `ScheduleSpec` variants:
-  - [ ] `epoch: int64` (literal)
-  - [ ] `relative: duration` (e.g., "11m")
-  - [ ] `template/expr` (evaluated to epoch)
-  - [ ] `cron: string` (compute next time)
-  - [ ] Optional `jitter: duration` (± jitter)
-- [ ] `ComputeNextRun(now, schedule) (time.Time, error)`
-- [ ] Validate mutual exclusivity and sensible bounds
+### Phase 3: Scheduling strategies ✅
+- [x] Implement `ScheduleSpec` variants:
+  - [x] `epoch: int64` (literal)
+  - [x] `relative: duration` (e.g., "11m")
+  - [x] `template/expr` (evaluated to epoch)
+  - [x] `cron: string` (compute next time)
+  - [x] Optional `jitter: duration` (± jitter)
+- [x] `ComputeNextRun(now, schedule) (time.Time, error)`
+- [x] Validate mutual exclusivity and sensible bounds
 
-### Phase 4: Execution engine
-- [ ] Replace single global ticker with per-request schedulers
-- [ ] For each request:
-  - [ ] Compute next run from `ScheduleSpec`
-  - [ ] At fire time: resolve dynamic fields → build HTTP request → send → record result → compute next
-- [ ] Concurrency controls: `--concurrency N` (worker pool), per-request max in-flight
-- [ ] Retries and backoff: `retries`, `backoff` (exponential with jitter)
-- [ ] Timeout per request (client-side)
-- [ ] `--once` and `--limit N` modes
+### Phase 4: Execution engine ✅
+- [x] Replace single global ticker with per-request schedulers
+- [x] For each request:
+  - [x] Compute next run from `ScheduleSpec`
+  - [x] At fire time: resolve dynamic fields → build HTTP request → send → record result → compute next
+- [x] Concurrency controls: `--concurrency N` (worker pool), per-request max in-flight
+- [x] Retries and backoff: `retries`, `backoff` (exponential with jitter)
+- [x] Timeout per request (client-side)
+- [x] `--once` and `--limit N` modes
 
-### Phase 5: CLI and UX
-- [ ] Flags: `--config`, `--scenario <name|regex>`, `--var k=v`, `--dry-run`, `--once`, `--concurrency`, `--limit`, `--log-json`
-- [ ] Dry run prints fully resolved requests and next run times without sending
-- [ ] Clear logging (name, resolved URL, status, latency, retries)
+### Phase 5: CLI and UX ✅
+- [x] Flags: `--config`, `--scenario <name|regex>`, `--var k=v`, `--dry-run`, `--once`, `--concurrency`, `--limit`, `--log-json`
+- [x] Dry run prints fully resolved requests and next run times without sending
+- [x] Clear logging (name, resolved URL, status, latency, retries)
 
 ### Phase 6: Testing and examples
 - [ ] Unit tests for:

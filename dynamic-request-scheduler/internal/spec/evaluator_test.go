@@ -433,7 +433,7 @@ func TestEvaluator_ComputeScheduledTime(t *testing.T) {
 			schedule: ScheduleSpec{
 				Cron: stringPtr("*/5 * * * *"),
 			},
-			wantErr: true, // Not implemented yet
+			wantErr: false, // We'll check it's after the current time
 		},
 		{
 			name:     "no schedule",
@@ -459,6 +459,11 @@ func TestEvaluator_ComputeScheduledTime(t *testing.T) {
 					if result.Before(baseTime) || result.After(baseTime.Add(jitterRange)) {
 						t.Errorf("Jittered time %v is outside expected range [%v, %v]",
 							result, baseTime, baseTime.Add(jitterRange))
+					}
+				} else if tt.name == "cron schedule" {
+					// For cron, just check it's after the current time
+					if result.Before(fixedTime) {
+						t.Errorf("Cron schedule result %v is before current time %v", result, fixedTime)
 					}
 				} else if !result.Equal(tt.want) {
 					t.Errorf("computeScheduledTime() = %v, want %v", result, tt.want)
