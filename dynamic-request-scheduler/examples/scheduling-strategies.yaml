@@ -1,0 +1,196 @@
+# Scheduling Strategies Configuration Example
+# This example demonstrates all available scheduling strategies:
+# - epoch: Specific Unix timestamp
+# - relative: Duration from current time
+# - template: Go template that evaluates to Unix timestamp
+# - cron: Traditional cron expressions
+# - jitter: Random variation added to scheduled times
+
+requests:
+  # ============================================================================
+  # EPOCH SCHEDULING - Specific Unix timestamps
+  # ============================================================================
+  
+  # Run at a specific time (e.g., New Year's Eve 2024)
+  - name: "New Year Countdown"
+    schedule:
+      epoch: 1735689600  # 2024-12-31 23:59:59 UTC
+      jitter: "±30s"
+    http:
+      method: "POST"
+      url: "https://events.example.com/new-year"
+      headers:
+        Content-Type: "application/json"
+        X-Event-Type: "countdown"
+        X-Request-ID: "{{ uuid }}"
+      body:
+        event_id: "{{ uuid }}"
+        event_type: "new_year_countdown"
+        timestamp: "{{ now | unix }}"
+        message: "Happy New Year 2025!"
+
+  # Run at a specific time in the past (for testing)
+  - name: "Past Event Test"
+    schedule:
+      epoch: 1640995200  # 2022-01-01 00:00:00 UTC
+    http:
+      method: "GET"
+      url: "https://api.example.com/test/past-event"
+      headers:
+        X-Test-Type: "past-epoch"
+        X-Request-ID: "{{ uuid }}"
+
+  # ============================================================================
+  # RELATIVE SCHEDULING - Duration from current time
+  # ============================================================================
+  
+  # Run immediately (0 seconds from now)
+  - name: "Immediate Task"
+    schedule:
+      relative: "0s"
+    http:
+      method: "POST"
+      url: "https://api.example.com/tasks/immediate"
+      headers:
+        Content-Type: "application/json"
+        X-Task-Type: "immediate"
+        X-Request-ID: "{{ uuid }}"
+      body:
+        task_id: "{{ uuid }}"
+        executed_at: "{{ now | unix }}"
+        priority: "high"
+
+  # Run in 5 minutes
+  - name: "Delayed Task"
+    schedule:
+      relative: "5m"
+      jitter: "±1m"
+    http:
+      method: "POST"
+      url: "https://api.example.com/tasks/delayed"
+      headers:
+        Content-Type: "application/json"
+        X-Task-Type: "delayed"
+        X-Request-ID: "{{ uuid }}"
+      body:
+        task_id: "{{ uuid }}"
+        scheduled_for: "{{ now | unix }}"
+        delay_minutes: 5
+
+  # Run in 1 hour
+  - name: "Hourly Task"
+    schedule:
+      relative: "1h"
+      jitter: "±5m"
+    http:
+      method: "GET"
+      url: "https://api.example.com/tasks/hourly"
+      headers:
+        X-Task-Type: "hourly"
+        X-Request-ID: "{{ uuid }}"
+
+  # ============================================================================
+  # TEMPLATE SCHEDULING - Go templates that evaluate to Unix timestamps
+  # ============================================================================
+  
+  # Run in 1 hour (simulating 9 AM task)
+  - name: "9 AM Daily Task"
+    schedule:
+      relative: "1h"
+      jitter: "±15m"
+    http:
+      method: "POST"
+      url: "https://api.example.com/tasks/daily-9am"
+      headers:
+        Content-Type: "application/json"
+        X-Task-Type: "daily-9am"
+        X-Request-ID: "{{ uuid }}"
+      body:
+        task_id: "{{ uuid }}"
+        scheduled_time: "9:00 AM"
+        business_date: "{{ now | rfc3339 }}"
+
+  # Run in 2 hours (simulating 3 PM task)
+  - name: "3 PM Daily Task"
+    schedule:
+      relative: "2h"
+      jitter: "±30m"
+    http:
+      method: "POST"
+      url: "https://api.example.com/tasks/daily-3pm"
+      headers:
+        Content-Type: "application/json"
+        X-Task-Type: "daily-3pm"
+        X-Request-ID: "{{ uuid }}"
+      body:
+        task_id: "{{ uuid }}"
+        scheduled_time: "3:00 PM"
+        business_date: "{{ now | rfc3339 }}"
+
+  # ============================================================================
+  # CRON SCHEDULING - Traditional cron expressions
+  # ============================================================================
+  
+  # Run every minute
+  - name: "Every Minute Task"
+    schedule:
+      cron: "* * * * *"
+      jitter: "±10s"
+    http:
+      method: "GET"
+      url: "https://api.example.com/tasks/every-minute"
+      headers:
+        X-Task-Type: "every-minute"
+        X-Request-ID: "{{ uuid }}"
+        X-Sequence: "{{ seq }}"
+
+  # Run every 5 minutes
+  - name: "Every 5 Minutes Task"
+    schedule:
+      cron: "*/5 * * * *"
+      jitter: "±30s"
+    http:
+      method: "POST"
+      url: "https://api.example.com/tasks/every-5-minutes"
+      headers:
+        Content-Type: "application/json"
+        X-Task-Type: "every-5-minutes"
+        X-Request-ID: "{{ uuid }}"
+      body:
+        task_id: "{{ uuid }}"
+        interval_minutes: 5
+        executed_at: "{{ now | unix }}"
+
+  # Run daily at 2 AM
+  - name: "Daily 2 AM Task"
+    schedule:
+      cron: "0 2 * * *"
+      jitter: "±15m"
+    http:
+      method: "POST"
+      url: "https://api.example.com/tasks/daily-2am"
+      headers:
+        Content-Type: "application/json"
+        X-Task-Type: "daily-2am"
+        X-Request-ID: "{{ uuid }}"
+      body:
+        task_id: "{{ uuid }}"
+        scheduled_time: "2:00 AM"
+        business_date: "{{ now | rfc3339 }}"
+
+  # Run every Monday at 9 AM
+  - name: "Weekly Monday 9 AM Task"
+    schedule:
+      cron: "0 9 * * 1"
+      jitter: "±1h"
+    http:
+      method: "POST"
+      url: "https://api.example.com/tasks/weekly-monday"
+      headers:
+        Content-Type: "application/json"
+        X-Task-Type: "weekly-monday"
+        X-Request-ID: "{{ uuid }}"
+      body:
+        task_id: "{{ uuid }}"
+        scheduled_time: "Monday 9:00 AM"
+        week_start: "{{ now | rfc3339 }}"

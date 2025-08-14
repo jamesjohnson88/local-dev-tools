@@ -7,7 +7,7 @@
 - **Phase 3**: ✅ **COMPLETED** - Scheduling strategies
 - **Phase 4**: ✅ **COMPLETED** - Execution engine
 - **Phase 5**: ✅ **COMPLETED** - CLI and UX
-- **Phase 6**: ⏳ **PENDING** - Testing and examples
+- **Phase 6**: ✅ **COMPLETED** - Testing and examples
 - **Phase 7**: ⏳ **PENDING** - Documentation
 
 ### Context and goals
@@ -68,19 +68,19 @@
 - [x] Dry run prints fully resolved requests and next run times without sending
 - [x] Clear logging (name, resolved URL, status, latency, retries)
 
-### Phase 6: Testing and examples
-- [ ] Unit tests for:
-  - [ ] Template function map and dynamic evaluation
-  - [ ] Schedule computations (epoch, relative, cron, jitter)
-  - [ ] HTTP build and header/payload resolution
-  - [ ] Retry/backoff behavior
-- [ ] Integration smoke test against a local mock server
-- [ ] Provide `examples/` with YAML configs demonstrating:
-  - [ ] Literal epoch
-  - [ ] Relative time
-  - [ ] Template-based scheduled time
-  - [ ] Cron definition
-  - [ ] Dynamic URL/headers/payload
+### Phase 6: Testing and examples ✅
+- [x] Unit tests for:
+  - [x] Template function map and dynamic evaluation
+  - [x] Schedule computations (epoch, relative, cron, jitter)
+  - [x] HTTP build and header/payload resolution
+  - [x] Retry/backoff behavior
+- [x] Integration smoke test against a local mock server
+- [x] Provide `examples/` with YAML configs demonstrating:
+  - [x] Literal epoch
+  - [x] Relative time
+  - [x] Template-based scheduled time
+  - [x] Cron definition
+  - [x] Dynamic URL/headers/payload
 
 ### Phase 7: Documentation
 - [ ] `README.md` updates: quickstart, flags, examples

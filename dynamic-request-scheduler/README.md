@@ -147,7 +147,7 @@ See the `examples/` directory for configuration examples:
 - **Phase 3**: ✅ Scheduling strategies
 - **Phase 4**: ✅ Execution engine
 - **Phase 5**: ✅ CLI and UX
-- **Phase 6**: ⏳ Testing and examples
+- **Phase 6**: ✅ Testing and examples
 - **Phase 7**: ⏳ Documentation
 
 ## Building
